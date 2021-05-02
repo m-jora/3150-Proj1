@@ -39,8 +39,9 @@ void beep() {
 	
 void freq_delay(){
 		TCNT0 = -63;
-		TCCR0 = 0b00000011;
-		
-		TCCR0 = 0x00;
+		TCCR0B = 0b00000011;
+		while(!(TIFR0 & (1<<TOV0)));
+		TCCR0B = 0x00;
+		TIFR0 = 1<<TOV0;
 		
 }

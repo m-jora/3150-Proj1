@@ -27,14 +27,22 @@ int main(void)
 	
     while(1)
 	{
-		//beep();
+		beep();
 	}
 }
 
 void beep() {
 	DDRC |= 0b01000000;
-	
+	TCNT1H = -0x61;
+	TCNT1L = 0xBE;
+	TCCR1B = 0b00000011; 
+	while(!(TIFR1 & (1<<TOV1))){
+		freq_delay();
+		PORTC ^= 0b01000000;	
 	}
+	TCCR1B = 0x00;
+	TIFR1 = 1<<TOV1;
+}
 	
 	
 void freq_delay(){
@@ -43,5 +51,4 @@ void freq_delay(){
 		while(!(TIFR0 & (1<<TOV0)));
 		TCCR0B = 0x00;
 		TIFR0 = 1<<TOV0;
-		
 }

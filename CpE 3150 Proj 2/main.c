@@ -26,6 +26,11 @@ int main(void)
 {
     while(1)
 	{
+		if(PIND & (1<<4)) // button get pressed
+		{
+			beep(); // beep time
+			while(PIND & (1<<4)); // waiting for button depress
+		}
 		//beep(); makes the speaker go brrrr
 	}
 }

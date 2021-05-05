@@ -17,10 +17,13 @@
  */ 
 
 #include <avr/io.h>
+#include "Adafruit_NeoPixel.h"
 
 void beep();
 
 void freq_delay();
+
+void setpixcolor(int n, int r, int g, int b);
 
 int main(void)
 {
@@ -31,8 +34,14 @@ int main(void)
 			beep(); // beep time
 			while(PIND & (1<<4)); // waiting for button depress
 		}
+		
 		//beep(); makes the speaker go brrrr
 	}
+}
+
+void setpixcolor(int n, int r, int g, int b)
+{
+	
 }
 
 void beep() {

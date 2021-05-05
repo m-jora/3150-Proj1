@@ -1,5 +1,5 @@
 /*
- * main.c
+ * main.
  *
  * Created: 4/30/2021 4:36:49 PM
  *  Author: hheselbarth1
@@ -24,10 +24,9 @@ void freq_delay();
 
 int main(void)
 {
-	
     while(1)
 	{
-		beep();
+		//beep(); makes the speaker go brrrr
 	}
 }
 
@@ -43,7 +42,7 @@ void beep() {
 	TCCR1B = 0x00;
 	TIFR1 = 1<<TOV1;
 }
-	
+
 	
 void freq_delay(){
 		TCNT0 = -63;

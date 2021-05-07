@@ -21,9 +21,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   8 .debug_frame  00000044  00000000  00000000  00001994  2**2
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_str    000004b9  00000000  00000000  000019d8  2**0
+  9 .debug_str    000004e0  00000000  00000000  000019d8  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_ranges 00000020  00000000  00000000  00001e91  2**0
+ 10 .debug_ranges 00000020  00000000  00000000  00001eb8  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -109,9 +109,9 @@ void freq_delay(){
   d6:	08 95       	ret
 
 000000d8 <beep>:
-		//beep(); makes the speaker go brrrr
-	}
-}
+{
+	
+}*/
 
 void beep() {
 	DDRC |= 0b01000000;
@@ -160,13 +160,13 @@ int main(void)
 {
     while(1)
 	{
-		if(PIND & (1<<4)) // edit mode switch
+		if(PIND & (1<<4)) // button get pressed
  10c:	4c 9b       	sbis	0x09, 4	; 9
  10e:	fe cf       	rjmp	.-4      	; 0x10c <main>
 		{
-			beep();
+			beep(); // beep time
  110:	0e 94 6c 00 	call	0xd8	; 0xd8 <beep>
-			while(PIND & (1<<4));
+			while(PIND & (1<<4)); // waiting for button depress
  114:	4c 99       	sbic	0x09, 4	; 9
  116:	fe cf       	rjmp	.-4      	; 0x114 <main+0x8>
  118:	f9 cf       	rjmp	.-14     	; 0x10c <main>

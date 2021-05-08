@@ -29,7 +29,6 @@ struct rgb neo_arr;
 
 int main(void)
 {
-	int test = 0x01>>4;
 	neopixel_init(neo_arr.r, neo_arr.g, neo_arr.b);
 	int light_level = 25;
 	int temp = 50;
@@ -38,15 +37,15 @@ int main(void)
 	{
 		clear_pixels();
 		// reset to debug values
-		light_level = 25;
+		light_level = 63;
 		temp = 50;
 		light_level &= 0x3F; // Limit to 0-63
 		int to_loop = (light_level/64);
-		for (int i = 0; i < to_loop; i++) // Set brightness for first 9 neopixels based on R24
+		for (int i = 0; i < to_loop; i++) // Set brightness for first 9 neopixels based on light_lvl
 		{
-			neo_arr.r[i] = 0x10;
-			neo_arr.g[i] = 0x10;
-			neo_arr.b[i] = 0x10;
+			neo_arr.r[i] = 0x30;
+			neo_arr.g[i] = 0x30;
+			neo_arr.b[i] = 0x30;
 		}
 		if (temp < 32) {
 			// All blue
@@ -69,13 +68,14 @@ int main(void)
 			neo_arr.b[10] = 0;
 		}
 		update_pixels();
+		short_delay(0xFF);
 	}
 }
 
 // initialize NeoPixels
 void neopixel_init()
 {
-	DDRB |= (1<<0); // Set PB0 to an input
+	DDRB |= 0x01; // Set PB0 to an input
 	PORTB &= 0; // Output 0x00 to PORTB
 
 	update_pixels(); // Initial NeoPixel Colors
@@ -86,7 +86,7 @@ void neopixel_init()
 // update all RGB NeoPixel values
 void update_pixels()
 {
-	for(int i = 0; i < 10; i++) // Loop through for each NeoPixel
+	for (int i = 9; i > -1; i--) // Loop through for each NeoPixel
 	{
 		send_pixel(neo_arr.r[i], neo_arr.g[i], neo_arr.b[i]); // Send a single 24 bit value for RGB
 	}
@@ -102,14 +102,14 @@ void send_pixel(unsigned char red, unsigned char green, unsigned char blue)
 		if(green & (1<<i)) // Send a 1
 		{
 			PORTB |= (1<<0); // Set PB0
-			_delay_ms(160); // Leave it high longer
+			short_delay(0xA0); // Leave it high longer than low
 			PORTB &= 0; // Clear PB0
 		}
 		else // Send a 0
 		{
 			PORTB |= (1<<0); // Set PB0
 			PORTB &= 0; // Clear PB0
-			_delay_ms(16); // Leave it low longer than high
+			short_delay(0x10); // Leave it low longer than high
 		}
 	}
 
@@ -118,14 +118,14 @@ void send_pixel(unsigned char red, unsigned char green, unsigned char blue)
 		if(red & (1<<i))// Send a 1
 		{
 			PORTB |= (1<<0); // Set PB0
-			_delay_ms(160); // Leave it high longer
+			short_delay(0xA0); // Leave it high longer than low
 			PORTB &= 0; // Clear PB0
 		}
 		else // Send a 0
 		{
 			PORTB |= (1<<0); // Set PB0
 			PORTB &= 0; // Clear PB0
-			_delay_ms(16); // Leave it low longer than high
+			short_delay(0x10); // Leave it low longer than high
 		}
 	}
 
@@ -134,18 +134,17 @@ void send_pixel(unsigned char red, unsigned char green, unsigned char blue)
 		if(blue & (1<<i))// Send a 1
 		{
 			PORTB |= (1<<0); // Set PB0
-			_delay_ms(160); // Leave it high longer
+			short_delay(0xA0); // Leave it high longer than low
 			PORTB &= 0; // Clear PB0
 		}
 		else // Send a 0
 		{
 			PORTB |= (1<<0); // Set PB0
 			PORTB &= 0; // Clear PB0
-			_delay_ms(16); // Leave it low longer than high
+			short_delay(0x10); // Leave it low longer than high
 		}
 	}
 
-	return;
 }
 
 // clears all NeoPixels
@@ -159,4 +158,20 @@ void clear_pixels()
 	}
 
 	return;
+}
+
+// Delays for clkCycles
+void short_delay(unsigned char clkCycles)
+{
+	// 2's Complement
+	clkCycles ^= 0xFF;
+	clkCycles += 0x01;
+
+	TCNT0 = clkCycles; // Set Timer value to the desired clock cycles
+	TCCR0B = 0x01; // Normal Mode, No Prescaling
+
+	while(!(TIFR0 & (1<<TOV0)));
+
+	TCCR0B = 0; // Stop the timer
+	TIFR0 = (1<<TOV0); // Reset overflow flag
 }

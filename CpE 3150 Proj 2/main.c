@@ -16,7 +16,15 @@
  *
  */ 
 
+// TCNT0 is 8 bit
+// TCNT1 & TCNT3 is 16bit
+// TCNT4 is 10 bit
+
+#define F_CPU 8000000UL
+
 #include <avr/io.h>
+#include <util/delay.h>
+
 #define _NOP() __asm__ __volatile__("nop")
 #define F_CPU 8000000UL
 #include "util/delay.h"
@@ -26,139 +34,151 @@ void beep();
 
 void freq_delay();
 
+struct rgb
+{
+	unsigned red;
+	unsigned green;
+	unsigned blue;
+};
+
+
+void set_all_pixels(unsigned, unsigned, unsigned);
+void enable_pixels();
+
+struct rgb neopixel_arr[10];
 //void setpixcolor(int n, int r, int g, int b);
 
 int main(void)
 {
-    while(1)
-	{
-		while ()
+	DDRB |= (1 << 0); // sets portB.0 to output
+	set_all_pixels(0,0,0); // pixels set to 0 (off)
+	enable_pixels();	// zero value output
+	int brightness = 0;
+	while(1)
+    {
+        TCNT1H = -0xF4;
+        TCNT1L = 0x24;
+        TCCR1B = 0b00000100;
+		brightness = 0;
+        while(!(TIFR1 & (1<<TOV1))) //2 second timer
+        {
+			//if(brightness >255)
+				//brightness = 0;
+            TCNT3H = -0x30;
+            TCNT3L = 0xD4;
+            TCCR3B = 0b00000011;
+            while (!(TIFR3 & (1<<TOV3))) //.1 second timer
+            {
+                if(PIND & (1<<4)) // button get pressed
+                {
+                    int hold_low = TCNT1L;
+                    int hold_high = TCNT1H;
+                    beep(); // beep time
+                    while(PIND & (1<<4)); // waiting for button depress
+                    
+                    while (!(PIND & (1<<4)))
+                    {
+						TCNT1H = hold_high;
+						TCNT1L = hold_low;
+						TIFR1 = 1<<TOV1;
+                    }
+					beep();
+					while(PIND & (1<<4));
+                }
+            }
+			set_all_pixels(brightness,0,0);
+			enable_pixels();
+			brightness += 13;
+            TCCR3B = 0x00;
+            TIFR3 = 1<<TOV3;
+        }
+        TCCR1B = 0x00;
+        TIFR1 = 1<<TOV1;
+
+        beep(); // makes speaker go brrrrrrrrr
+		for(int i = 0; i<10; i ++) // strobe
 		{
-		
-			if(PIND & (1<<4)) // button get pressed
-			{
-				beep(); // beep time
-				while(PIND & (1<<4)); // waiting for button depress
-			}
-		
-			//beep(); makes the speaker go brrrr
+			set_all_pixels(0,0,0);
+			enable_pixels();
+			_delay_ms(15);
+			set_all_pixels(255,0,0);
+			enable_pixels();	
+			_delay_ms(15);
 		}
-	}
+    }
 }
 
 /*void setpixcolor(int n, int r, int g, int b)
 {
-	
+    
 }*/
 
 void beep() {
-	DDRC |= 0b01000000;
-	TCNT1H = -0x61;
-	TCNT1L = 0xBE;
-	TCCR1B = 0b00000011; 
-	while(!(TIFR1 & (1<<TOV1))){
-		freq_delay();
-		PORTC ^= 0b01000000;	
-	}
-	TCCR1B = 0x00;
-	TIFR1 = 1<<TOV1;
-}
-
-	
-void freq_delay(){
-		TCNT0 = -63;
-		TCCR0B = 0b00000011;
-		while(!(TIFR0 & (1<<TOV0)));
-		TCCR0B = 0x00;
-		TIFR0 = 1<<TOV0;
+    DDRC |= 0b01000000;
+    TCNT0 = -0xFF;
+    TCCR0B = 0b00000101;
+    
+    while(!(TIFR0 & (1<<TOV0))){
+        _delay_ms(1);
+        PORTC ^= 0b01000000;    
+    }
+    TCCR0B = 0x00;
+    TIFR0 = 1<<TOV0;
 }
 
 // neopixel garbage
-// initialize NeoPixels
-void NeoPixel_Init(unsigned char red[], unsigned char green[], unsigned char blue[])
+static inline void send_bit(unsigned bit) // function that handles bit sending
 {
-	DDRB |= (1<<0); // Set PB0 to an input
-	PORTB &= 0; // Output 0x00 to PORTB
-
-	updatePixel(red, green, blue); // Initial NeoPixel Colors
-
+	int is_on = bit & 1;
+	if (is_on)
+	{
+		PORTB |= 0b00000001;
+		_NOP();
+		_NOP();
+		_NOP();
+		PORTB &= 0b11111110;
+	}
+	else
+	{
+		PORTB |= 0b00000001;
+		PORTB &= 0b11111110;
+		_NOP();
+		_NOP();
+		_NOP();
+	}
 	return;
 }
 
-// update all RGB NeoPixel values
-void updatePixel(unsigned char red[], unsigned char green[], unsigned char blue[])
-{
-	for(int i = 0; i < 10; i++) // Loop through for each NeoPixel
-	{
-		sendPixel(red[i], green[i], blue[i]); // Send a single 24 bit value for RGB
-	}
 
+void set_all_pixels(unsigned red, unsigned green, unsigned blue) // pixel setter
+{
+	for (int i = 0; i < 10; i++)
+	{
+		neopixel_arr[i].red = red;
+		neopixel_arr[i].green = green;
+		neopixel_arr[i].blue = blue;
+	}
 	return;
 }
 
-// send RGB for a single NeoPixel
-void sendPixel(unsigned char red, unsigned char green, unsigned char blue)
+void enable_pixels() // sends bit values to the NeoPixels
 {
-	for(int i = 7; i >= 0; i--) // Loop for each bit in the Green Byte
+	for (int i = 0; i < 10; i++)
 	{
-		if(green & (1<<i)) // Send a 1
+		for (int b = 7; b >= 0; b--)
 		{
-			PORTB |= (1<<0); // Set PB0
-			short_Delay(0xA0); // Leave it high longer than low
-			PORTB &= 0; // Clear PB0
+			send_bit(neopixel_arr[i].green >> b);
 		}
-		else // Send a 0
+		for (int b = 7; b >= 0; b--)
 		{
-			PORTB |= (1<<0); // Set PB0
-			PORTB &= 0; // Clear PB0
-			short_Delay(0x10); // Leave it low longer than high
+			send_bit(neopixel_arr[i].red >> b);
+		}
+		for (int b = 7; b >= 0; b--)
+		{
+			send_bit(neopixel_arr[i].blue >> b);
 		}
 	}
-
-	for(int i = 7; i >= 0; i--) // Loop for each bit in the Red Byte
-	{
-		if(red & (1<<i))// Send a 1
-		{
-			PORTB |= (1<<0); // Set PB0
-			short_Delay(0xA0); // Leave it high longer than low
-			PORTB &= 0; // Clear PB0
-		}
-		else // Send a 0
-		{
-			PORTB |= (1<<0); // Set PB0
-			PORTB &= 0; // Clear PB0
-			short_Delay(0x10); // Leave it low longer than high
-		}
-	}
-
-	for(int i = 7; i >= 0; i--) // Loop for each bit in the Blue Byte
-	{
-		if(blue & (1<<i))// Send a 1
-		{
-			PORTB |= (1<<0); // Set PB0
-			short_Delay(0xA0); // Leave it high longer than low
-			PORTB &= 0; // Clear PB0
-		}
-		else // Send a 0
-		{
-			PORTB |= (1<<0); // Set PB0
-			PORTB &= 0; // Clear PB0
-			short_Delay(0x10); // Leave it low longer than high
-		}
-	}
-
 	return;
 }
 
-// clears all NeoPixels
-void clearPixel(unsigned char *red, unsigned char *green, unsigned char *blue) // Pass by reference
-{
-	for(int i = 0; i < 10; i++) // Loop to clear each NeoPixel
-	{
-		red[i] = 0x00;
-		green[i] = 0x00;
-		blue[i] = 0x00;
-	}
 
-	return;
-}

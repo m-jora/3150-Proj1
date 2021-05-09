@@ -1,9 +1,10 @@
 /*
  * main.c
  *
- * Author: kwwest
+ * Author: kwest
  */ 
 
+#include <stdio.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #define F_CPU 8000000UL
@@ -45,9 +46,9 @@ int main(void)
 		printf("TO_LOOP: %d\n", to_loop);
 		for (int i = 0; i < to_loop; i++) // Set brightness for first 9 neopixels based on light_lvl
 		{
-			neo_arr.r[i] = 0x30;
-			neo_arr.g[i] = 0x30;
-			neo_arr.b[i] = 0x30;
+			neo_arr.r[i] = 0x20;
+			neo_arr.g[i] = 0x20;
+			neo_arr.b[i] = 0x20;
 		}
 		printf("TEMP: %d", temp);
 		if (temp < 32) {
@@ -133,14 +134,18 @@ void send_pixel(unsigned char red, unsigned char green, unsigned char blue)
 		if(green & (1<<i)) // Send a 1
 		{
 			PORTB |= (1<<0); // Set PB0
-			short_delay(0xA0); // Leave it high longer than low
+			_NOP();
+			_NOP();
+			_NOP();
 			PORTB &= 0; // Clear PB0
 		}
 		else // Send a 0
 		{
 			PORTB |= (1<<0); // Set PB0
 			PORTB &= 0; // Clear PB0
-			short_delay(0x10); // Leave it low longer than high
+			_NOP();
+			_NOP();
+			_NOP();
 		}
 	}
 
@@ -149,14 +154,18 @@ void send_pixel(unsigned char red, unsigned char green, unsigned char blue)
 		if(red & (1<<i))// Send a 1
 		{
 			PORTB |= (1<<0); // Set PB0
-			short_delay(0xA0); // Leave it high longer than low
+			_NOP();
+			_NOP();
+			_NOP();
 			PORTB &= 0; // Clear PB0
 		}
 		else // Send a 0
 		{
 			PORTB |= (1<<0); // Set PB0
 			PORTB &= 0; // Clear PB0
-			short_delay(0x10); // Leave it low longer than high
+			_NOP();
+			_NOP();
+			_NOP();
 		}
 	}
 
@@ -165,14 +174,18 @@ void send_pixel(unsigned char red, unsigned char green, unsigned char blue)
 		if(blue & (1<<i))// Send a 1
 		{
 			PORTB |= (1<<0); // Set PB0
-			short_delay(0xA0); // Leave it high longer than low
+			_NOP();
+			_NOP();
+			_NOP();
 			PORTB &= 0; // Clear PB0
 		}
 		else // Send a 0
 		{
 			PORTB |= (1<<0); // Set PB0
 			PORTB &= 0; // Clear PB0
-			short_delay(0x10); // Leave it low longer than high
+			_NOP();
+			_NOP();
+			_NOP();
 		}
 	}
 

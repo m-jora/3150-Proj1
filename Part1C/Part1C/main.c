@@ -4,7 +4,6 @@
  * Author: kwest
  */ 
 
-#include <stdio.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #define F_CPU 8000000UL
@@ -43,22 +42,20 @@ int main(void)
 		temp = 100;
 		light_level &= 0x3F; // Limit to 0-63
 		int to_loop = ((float)(light_level/64))*100;
-		printf("TO_LOOP: %d\n", to_loop);
 		for (int i = 0; i < to_loop; i++) // Set brightness for first 9 neopixels based on light_lvl
 		{
-			neo_arr.r[i] = 0x20;
-			neo_arr.g[i] = 0x20;
-			neo_arr.b[i] = 0x20;
+			neo_arr.r[i] = 0x00;
+			neo_arr.g[i] = 0x30;
+			neo_arr.b[i] = 0x00;
 		}
-		printf("TEMP: %d", temp);
 		if (temp < 32) {
 			// All blue (...-31)
 			neo_arr.r[10] = 0;
 			neo_arr.b[10] = 0;
-			neo_arr.g[10] = 64;
+			neo_arr.g[10] = 255;
 		} else if (temp > 96) { // (97-...)
 			// All red
-			neo_arr.r[10] = 64;
+			neo_arr.r[10] = 255;
 			neo_arr.g[10] = 0;
 			neo_arr.b[10] = 0;
 		} else if (temp < 64) {  // LT_64   (32-63)
@@ -118,7 +115,7 @@ void neopixel_init()
 // update all RGB NeoPixel values
 void update_pixels()
 {
-	for (int i = 0; i < 10; i++) // Loop through for each NeoPixel
+	for (int i = 9; i > -1; i--) // Loop through for each NeoPixel
 	{
 		send_pixel(neo_arr.r[i], neo_arr.g[i], neo_arr.b[i]); // Send a single 24 bit value for RGB
 	}

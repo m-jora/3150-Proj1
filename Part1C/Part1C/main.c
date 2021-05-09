@@ -37,40 +37,40 @@ struct rgb neo_arr = {
 int main(void)
 {
 	neopixel_init();
-	int light_level = 25;
-	int temp = 0;
+	int light_level = 32;
+	int temp = 65;
 
 	while(1)
 	{
-		// clear_pixels();
+		clear_pixels();
 		// reset to debug values
 		light_level &= 0x3F; // Limit to 0-63
-		int to_loop = ((float)(light_level/64))*100;
+		int to_loop = (((float)light_level/64))*10;
 		to_loop = 5;
 		for (int i = 0; i < to_loop; i++) // Set brightness for first 9 neopixels based on light_lvl
 		{
 			neo_arr.r[i] = 0x00;
-			neo_arr.g[i] = 0x30;
+			neo_arr.g[i] = 0x20;
 			neo_arr.b[i] = 0x00;
 		}
 		if (temp < 32) {
 			// All blue (...-31)
-			neo_arr.r[0] = 0;
-			neo_arr.g[0] = 0;
-			neo_arr.b[0] = 0x30;
+			neo_arr.r[9] = 0;
+			neo_arr.g[9] = 0;
+			neo_arr.b[9] = 0x30;
 		} else if (temp > 96) { // (97-...)
 			// All red
-			neo_arr.r[0] = 0x30;
-			neo_arr.g[0] = 0;
-			neo_arr.b[0] = 0;
+			neo_arr.r[9] = 0x30;
+			neo_arr.g[9] = 0;
+			neo_arr.b[9] = 0;
 		} else if (temp < 64) {  // LT_64   (32-63)
-			neo_arr.r[0] = 0;
-			neo_arr.g[0] = (temp-32)*2;
-			neo_arr.b[0] = (-temp+64)*2;
+			neo_arr.r[9] = 0;
+			neo_arr.g[9] = (temp-32)*2;
+			neo_arr.b[9] = (-temp+64)*2;
 		} else { // GT_64 (64-96)
-			neo_arr.r[0] = (temp-64)*2;
-			neo_arr.g[0] = (-temp+96)*2; 
-			neo_arr.b[0] = 0;
+			neo_arr.r[9] = (temp-64)*2;
+			neo_arr.g[9] = (-temp+96)*2; 
+			neo_arr.b[9] = 0;
 		}
 		update_pixels();
 	}

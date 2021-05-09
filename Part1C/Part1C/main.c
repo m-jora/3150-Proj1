@@ -89,7 +89,7 @@ void neopixel_init()
 // update all RGB NeoPixel values
 void update_pixels()
 {
-	for (int i = 0; i < 9; i++) // Loop through for each NeoPixel
+	for (int i = 9; i < 0; i--) // Loop through for each NeoPixel
 	{
 		send_pixel(neo_arr.r[i], neo_arr.g[i], neo_arr.b[i]); // Send a single 24 bit value for RGB
 	}

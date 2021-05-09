@@ -50,22 +50,22 @@ int main(void)
 		}
 		if (temp < 32) {
 			// All blue (...-31)
-			neo_arr.r[10] = 0;
-			neo_arr.b[10] = 0;
-			neo_arr.g[10] = 255;
+			neo_arr.r[9] = 0;
+			neo_arr.b[9] = 0;
+			neo_arr.g[9] = 0x30;
 		} else if (temp > 96) { // (97-...)
 			// All red
-			neo_arr.r[10] = 255;
-			neo_arr.g[10] = 0;
-			neo_arr.b[10] = 0;
+			neo_arr.r[9] = 0x30;
+			neo_arr.g[9] = 0;
+			neo_arr.b[9] = 0;
 		} else if (temp < 64) {  // LT_64   (32-63)
-			neo_arr.r[10] = 0;
-			neo_arr.b[10] = (temp-32)*2;
-			neo_arr.g[10] = (-temp+64)*2;
+			neo_arr.r[9] = 0;
+			neo_arr.b[9] = (temp-32)*2;
+			neo_arr.g[9] = (-temp+64)*2;
 		} else { // GT_64 (64-96)
-			neo_arr.r[10] = (temp-64)*2;
-			neo_arr.b[10] = (-temp+96)*2; 
-			neo_arr.g[10] = 0;
+			neo_arr.r[9] = (temp-64)*2;
+			neo_arr.b[9] = (-temp+96)*2; 
+			neo_arr.g[9] = 0;
 		}
 		update_pixels();
 		short_delay(0xFF);
@@ -115,7 +115,7 @@ void neopixel_init()
 // update all RGB NeoPixel values
 void update_pixels()
 {
-	for (int i = 9; i > -1; i--) // Loop through for each NeoPixel
+	for (int i = 0; i > -1; i--) // Loop through for each NeoPixel
 	{
 		send_pixel(neo_arr.r[i], neo_arr.g[i], neo_arr.b[i]); // Send a single 24 bit value for RGB
 	}

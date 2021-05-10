@@ -56,7 +56,7 @@ int main(void)
 	int brightness = 0;
 	while(1)
     {
-        TCNT1H = -0xF4;
+        TCNT1H = -0xF4; // sets up 2 second timer with a 1024
         TCNT1L = 0x24;
         TCCR1B = 0b00000100;
 		brightness = 0;
@@ -108,10 +108,6 @@ int main(void)
     }
 }
 
-/*void setpixcolor(int n, int r, int g, int b)
-{
-    
-}*/
 
 void beep() {
     DDRC |= 0b01000000;

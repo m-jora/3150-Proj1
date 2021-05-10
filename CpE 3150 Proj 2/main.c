@@ -20,15 +20,10 @@
 // TCNT1 & TCNT3 is 16bit
 // TCNT4 is 10 bit
 
-#define F_CPU 8000000UL
-
 #include <avr/io.h>
-#include <util/delay.h>
 
 #define _NOP() __asm__ __volatile__("nop")
 #define F_CPU 8000000UL
-#include "util/delay.h"
-//#include "Adafruit_NeoPixel.h"
 
 void beep();
 
@@ -116,11 +111,21 @@ void beep() {
     TCCR0B = 0b00000101;
     
     while(!(TIFR0 & (1<<TOV0))){
-        _delay_ms(1);
-        PORTC ^= 0b01000000;    
+		freq_delay();
+		PORTC ^= 0b01000000;    
     }
     TCCR0B = 0x00;
     TIFR0 = 1<<TOV0;
+}
+
+
+void freq_delay(){
+	TCNT4 = 0x23;
+	TC4H = -0x00;
+	TCCR4B = 0b00000011;
+	
+	while(!(TIFR4 & (1<<TOV4)));
+	TIFR4 = 1<<TOV4;
 }
 
 // neopixel garbage

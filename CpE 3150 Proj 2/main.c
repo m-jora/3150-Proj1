@@ -44,6 +44,7 @@ struct rgb
 
 void set_all_pixels(unsigned, unsigned, unsigned);
 void enable_pixels();
+void delay_15ms_ctc();
 
 struct rgb neopixel_arr[10];
 //void setpixcolor(int n, int r, int g, int b);
@@ -100,10 +101,10 @@ int main(void)
 		{
 			set_all_pixels(0,0,0);
 			enable_pixels();
-			_delay_ms(15);
+			delay_15ms_ctc();
 			set_all_pixels(255,0,0);
 			enable_pixels();	
-			_delay_ms(15);
+			delay_15ms_ctc();
 		}
     }
 }
@@ -178,3 +179,13 @@ void enable_pixels() // sends bit values to the NeoPixels
 }
 
 
+void delay_15ms_ctc()
+{
+	OCR0B = 0x75;
+	TCNT0 = 0x00;
+	TCCR0B = (TCCR0B & 0x00) | (1<<CS02) | (1<<CS00);
+	while((TIFR0 & (1<<OCF0B)) == 0);
+	TCCR0B &= ~((1<<CS02)|(1<<CS01)|(1<<CS00));
+	TIFR0 |= 1<<OCF1A;
+	TCNT0 = 0;
+}
